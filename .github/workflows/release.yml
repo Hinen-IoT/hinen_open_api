@@ -15,18 +15,19 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v5.0.0
-      - name: 🏗 Set up Python packaging tools
-        run: pip install build twine
       - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
         id: python
         uses: actions/setup-python@v6.0.0
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
           cache: "pip"
-      - name: 🏗 Install dependencies
-        run: pip install -r requirements.txt
-      - name: 🏗 Install dev dependencies
-        run: pip install pytest pytest-asyncio black flake8
+      - name: 🏗 Set up Python packaging tools
+        run: pip install build twine
+      - name: 🏗 Install all dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio black flake8
       - name: 🏗 Set package version
         run: |
           version="${{ github.event.release.tag_name }}"
