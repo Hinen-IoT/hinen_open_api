@@ -4,7 +4,6 @@ on:
   release:
     types:
       - published
-  workflow_dispatch:
 
 env:
   DEFAULT_PYTHON: "3.13"
@@ -16,31 +15,29 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v5.0.0
-      - name: 🏗 Set up Poetry
-        run: pipx install poetry
+      - name: 🏗 Set up Python packaging tools
+        run: pip install build twine
       - name: 🏗 Set up Python ${{ env.DEFAULT_PYTHON }}
         id: python
         uses: actions/setup-python@v6.0.0
         with:
           python-version: ${{ env.DEFAULT_PYTHON }}
           cache: "poetry"
-      - name: 🏗 Install workflow dependencies
-        run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
       - name: 🏗 Install dependencies
-        run: poetry install --no-interaction
+        run: pip install -r requirements.txt
+      - name: 🏗 Install dev dependencies
+        run: pip install pytest pytest-asyncio black flake8
       - name: 🏗 Set package version
         run: |
           version="${{ github.event.release.tag_name }}"
           version="${version,,}"
           version="${version#v}"
-          poetry version --no-interaction "${version}"
+          sed -i 's/version = ".*"/version = "'"${version}"'"/' pyproject.toml
       - name: 🏗 Build package
-        run: poetry build --no-interaction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+        run: python -m build                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
       - name: 🚀 Publish to PyPi
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          poetry config pypi-token.pypi "${PYPI_TOKEN}"
-          poetry publish --no-interaction
+          echo "🚀 执行实际发布"
+          python -m twine upload dist/* -u __token__ -p "${PYPI_TOKEN}"
